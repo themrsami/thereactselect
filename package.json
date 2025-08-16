@@ -1,6 +1,6 @@
 {
   "name": "thereactselect",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A beautiful, fast, and accessible React Select component library",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -22,7 +22,7 @@
     "type": "git",
     "url": "git+https://github.com/themrsami/thereactselect.git"
   },
-  "homepage": "https://github.com/themrsami/thereactselect",
+  "homepage": "https://thereactselect.vercel.app",
   "bugs": {
     "url": "https://github.com/themrsami/thereactselect/issues"
   },

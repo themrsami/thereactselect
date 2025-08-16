@@ -2,6 +2,17 @@
 
 A beautiful, fast, and accessible React Select component library built with TypeScript and Tailwind CSS. No external dependencies except React.
 
+## 🌟 Live Demo
+
+**🚀 [View Live Demo & Playground](https://thereactselect.vercel.app)**
+
+Experience all features including:
+- **Interactive Playground** - Test all configurations in real-time
+- **Live Examples** - See components in action
+- **Complete Documentation** - API reference and usage guides
+- **Dark/Light Mode** - Toggle themes to see both modes
+- **Copy-Paste Code** - Generated code for immediate use
+
 ## Features
 
 ✨ **Beautiful Design** - Clean, modern interface with smooth animations  
@@ -28,7 +39,8 @@ A beautiful, fast, and accessible React Select component library built with Type
 
 ## Installation
 
-```bash
+> 💡 **Try it first:** Check out the [live demo and playground](https://thereactselect.vercel.app) before installing!
+
 ```bash
 # npm
 npm install thereactselect
@@ -40,6 +52,8 @@ pnpm add thereactselect
 yarn add thereactselect
 
 # bun
+bun add thereactselect
+```
 bun add thereactselect
 ```
 ```
@@ -795,6 +809,14 @@ When reporting issues, please include:
 - Expected vs actual behavior
 - Browser and version information
 - Code examples if applicable
+
+## Links
+
+- 🌐 **[Live Demo & Playground](https://thereactselect.vercel.app)** - Interactive examples and configuration
+- 📦 **[NPM Package](https://www.npmjs.com/package/thereactselect)** - Install and usage
+- 📚 **[GitHub Repository](https://github.com/themrsami/thereactselect)** - Source code and issues
+- 🎮 **[Interactive Playground](https://thereactselect.vercel.app/playground)** - Test all features
+- 📖 **[Documentation](https://thereactselect.vercel.app#api-reference)** - Complete API reference
 
 ## License
 
