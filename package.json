@@ -1,24 +1,90 @@
 {
-  "name": "reactselect",
-  "version": "0.1.0",
-  "private": true,
+  "name": "thereactselect",
+  "version": "1.0.0",
+  "description": "A beautiful, fast, and accessible React Select component library",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/themrsami/thereactselect.git"
+  },
+  "homepage": "https://github.com/themrsami/thereactselect",
+  "bugs": {
+    "url": "https://github.com/themrsami/thereactselect/issues"
+  },
+  "author": "Usama <themrsami@gmail.com> (https://github.com/themrsami)",
+  "license": "MIT",
+  "keywords": [
+    "react",
+    "select",
+    "dropdown",
+    "multiselect",
+    "combobox",
+    "typescript",
+    "tailwindcss",
+    "ui",
+    "component",
+    "thereactselect",
+    "react-select",
+    "form",
+    "input",
+    "accessible",
+    "searchable",
+    "multi-select",
+    "select-all",
+    "badges",
+    "dark-mode",
+    "lightweight",
+    "fast",
+    "beautiful",
+    "modern",
+    "customizable"
+  ],
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "build:lib": "tsup lib/index.ts --format cjs,esm --dts --clean",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prepublishOnly": "pnpm run build:lib"
   },
   "dependencies": {
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "next": "15.4.6"
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.539.0",
+    "use-debounce": "^10.0.5"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4"
+    "@types/react-syntax-highlighter": "^15.5.13",
+    "next": "15.4.6",
+    "next-themes": "^0.4.6",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-syntax-highlighter": "^15.6.1",
+    "tailwindcss": "^4",
+    "tsup": "^8.5.0",
+    "typescript": "^5"
   }
 }

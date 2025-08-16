@@ -1,0 +1,32 @@
+# Development files
+app/
+public/
+.next/
+node_modules/
+.env*
+.vscode/
+.idea/
+
+# Config files
+next.config.ts
+postcss.config.mjs
+tailwind.config.ts
+tsup.config.ts
+
+# Docs and examples
+*.md
+!README.md
+
+# Source maps and build artifacts
+*.tsbuildinfo
+*.log
+.turbo/
+
+# Testing
+__tests__/
+*.test.*
+*.spec.*
+
+# Git
+.git/
+.gitignore
