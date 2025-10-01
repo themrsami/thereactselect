@@ -1,136 +1,61 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useTheme } from "next-themes";
-import { Sun, Moon, Github, Home, Copy, Check, RefreshCw, Zap } from "lucide-react";
+import { Sun, Moon, Github, Home, Copy, Check, RefreshCw, Zap, Code } from "lucide-react";
 import { Select } from "../../lib";
 import type { SelectOption } from "../../lib";
 import { CodeBlock } from "../../components/ui/code-block";
 import { StyledInput } from "../../components/ui/styled-input";
 import { StyledCheckbox } from "../../components/ui/styled-checkbox";
+import { cn } from "../../lib/utils";
 
 interface PlaygroundState {
+  // Styling
   variant: "default" | "outline" | "ghost" | "filled";
   size: "default" | "sm" | "lg" | "xl";
+  
+  // Basic Options
   multiple: boolean;
   searchable: boolean;
   clearable: boolean;
   disabled: boolean;
+  required: boolean;
+  
+  // States
   error: boolean;
   success: boolean;
   loading: boolean;
+  
+  // Display Options
   numbered: boolean;
+  showBadges: boolean;
+  showIcons: boolean;
+  showDescriptions: boolean;
+  
+  // Grouping
+  useGroups: boolean;
+  showGroupHeaders: boolean;
+  groupDividers: boolean;
+  
+  // Multi-select
+  selectAll: boolean;
   selectedItemsDisplay: "badges" | "text" | "count";
   showItemClearButtons: boolean;
   maxSelectedItemsToShow: number;
-  showBadges: boolean;
-  badgeVariant: "default" | "secondary" | "success" | "warning" | "error" | "outline";
-  showIcons: boolean;
-  showDescriptions: boolean;
-  useGroups: boolean;
-  selectAll: boolean;
+  
+  // Behavior
+  closeOnSelect: boolean;
+  
+  // Text Configuration
+  placeholder: string;
+  searchPlaceholder: string;
+  noOptionsMessage: string;
+  noSearchResultsMessage: string;
   selectAllLabel: string;
-  placeholder: string;
-  noOptionsMessage: string;
-  searchPlaceholder: string;
-}
-
-// Sample data with badges, icons, and descriptions available
-const richSampleOptions = [
-  { 
-    value: "apple", 
-    label: "Apple",
-    description: "A sweet red fruit",
-    badge: "Popular",
-    badgeVariant: "success" as const,
-    icon: Zap
-  },
-  { 
-    value: "banana", 
-    label: "Banana",
-    description: "A yellow tropical fruit", 
-    badge: "Healthy",
-    badgeVariant: "default" as const,
-    icon: Sun
-  },
-  { 
-    value: "orange", 
-    label: "Orange",
-    description: "A citrus fruit",
-    badge: "Vitamin C",
-    badgeVariant: "warning" as const,
-    icon: Moon
-  },
-  { 
-    value: "grape", 
-    label: "Grape",
-    description: "Small purple fruits",
-    badge: "Antioxidants", 
-    badgeVariant: "secondary" as const,
-    icon: Github
-  },
-  { 
-    value: "strawberry", 
-    label: "Strawberry",
-    description: "A red berry",
-    badge: "Seasonal",
-    badgeVariant: "error" as const,
-    icon: Home
-  },
-  { 
-    value: "watermelon", 
-    label: "Watermelon",
-    description: "A large green fruit",
-    badge: "Hydrating",
-    badgeVariant: "outline" as const,
-    icon: RefreshCw
-  },
-];
-
-// Default simple options (used by default)
-const sampleOptions = [
-  { value: "apple", label: "Apple" },
-  { value: "banana", label: "Banana" },
-  { value: "orange", label: "Orange" },
-  { value: "grape", label: "Grape" },
-  { value: "strawberry", label: "Strawberry" },
-  { value: "watermelon", label: "Watermelon" },
-];
-
-const groupedSampleOptions = [
-  {
-    label: "Fruits",
-    options: [
-      { value: "apple", label: "Apple", description: "A sweet red fruit", badge: "Popular", icon: Zap },
-      { value: "banana", label: "Banana", description: "A yellow tropical fruit", badge: "Healthy", icon: Sun },
-      { value: "orange", label: "Orange", description: "A citrus fruit", badge: "Vitamin C", icon: Moon },
-    ]
-  },
-  {
-    label: "Vegetables", 
-    options: [
-      { value: "carrot", label: "Carrot", description: "An orange root vegetable", badge: "Crunchy", icon: Github },
-      { value: "broccoli", label: "Broccoli", description: "A green tree-like vegetable", badge: "Nutritious", icon: Home },
-      { value: "spinach", label: "Spinach", description: "A leafy green vegetable", badge: "Iron-rich", icon: RefreshCw },
-    ]
-  }
-];
-
-interface PlaygroundState {
-  variant: "default" | "outline" | "ghost" | "filled";
-  size: "sm" | "default" | "lg" | "xl";
-  multiple: boolean;
-  searchable: boolean;
-  clearable: boolean;
-  disabled: boolean;
-  error: boolean;
-  success: boolean;
-  loading: boolean;
-  numbered: boolean;
-  useGroups: boolean;
-  placeholder: string;
-  noOptionsMessage: string;
-  searchPlaceholder: string;
+  
+  // Badge Variant
+  badgeVariant: "default" | "secondary" | "success" | "warning" | "error" | "outline";
 }
 
 function ThemeToggle() {
@@ -139,7 +64,8 @@ function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      className="p-2 rounded-md border border-border bg-background hover:bg-accent"
+      className="relative p-2 rounded-md border border-border bg-background hover:bg-accent transition-colors flex items-center justify-center"
+      title="Toggle theme"
     >
       <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
       <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -159,11 +85,44 @@ function CopyButton({ code }: { code: string }) {
   return (
     <button
       onClick={copyToClipboard}
-      className="inline-flex items-center gap-2 px-3 py-1 text-sm bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
+      className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
     >
       {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
       {copied ? "Copied!" : "Copy Code"}
     </button>
+  );
+}
+
+function ConfigSection({ 
+  title, 
+  children,
+  collapsible = false 
+}: { 
+  title: string; 
+  children: React.ReactNode;
+  collapsible?: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(true);
+
+  return (
+    <div className="border-b border-border last:border-0 pb-4 last:pb-0">
+      {collapsible ? (
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full flex items-center justify-between text-sm font-semibold mb-3 hover:text-primary transition-colors"
+        >
+          <span>{title}</span>
+          <span className={cn("transition-transform", isOpen && "rotate-180")}>▼</span>
+        </button>
+      ) : (
+        <h3 className="text-sm font-semibold mb-3">{title}</h3>
+      )}
+      {(!collapsible || isOpen) && (
+        <div className="space-y-3">
+          {children}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -175,80 +134,125 @@ export default function Playground() {
     searchable: false,
     clearable: false,
     disabled: false,
+    required: false,
     error: false,
     success: false,
     loading: false,
     numbered: false,
-    selectedItemsDisplay: "badges",
-    showItemClearButtons: true,
-    maxSelectedItemsToShow: 3,
     showBadges: false,
-    badgeVariant: "default",
     showIcons: false,
     showDescriptions: false,
     useGroups: false,
+    showGroupHeaders: true,
+    groupDividers: false,
     selectAll: false,
-    selectAllLabel: "Select All",
+    selectedItemsDisplay: "badges",
+    showItemClearButtons: true,
+    maxSelectedItemsToShow: 3,
+    closeOnSelect: true,
     placeholder: "Select an option...",
-    noOptionsMessage: "No options available",
     searchPlaceholder: "Search...",
+    noOptionsMessage: "No options available",
+    noSearchResultsMessage: "No results found",
+    selectAllLabel: "Select All",
+    badgeVariant: "default",
   });
 
   const [selectedValue, setSelectedValue] = useState<string | number | (string | number)[] | undefined>();
 
-  // Dynamic rich options based on config
-  const getRichOptions = useCallback(() => [
-    { 
-      value: "apple", 
-      label: "Apple",
-      description: config.showDescriptions ? "A sweet red fruit" : undefined,
-      badge: config.showBadges ? "Popular" : undefined,
-      badgeVariant: config.badgeVariant,
-      icon: config.showIcons ? Zap : undefined
-    },
-    { 
-      value: "banana", 
-      label: "Banana",
-      description: config.showDescriptions ? "A yellow tropical fruit" : undefined, 
-      badge: config.showBadges ? "Healthy" : undefined,
-      badgeVariant: config.badgeVariant,
-      icon: config.showIcons ? Sun : undefined
-    },
-    { 
-      value: "orange", 
-      label: "Orange",
-      description: config.showDescriptions ? "A citrus fruit" : undefined,
-      badge: config.showBadges ? "Vitamin C" : undefined,
-      badgeVariant: config.badgeVariant,
-      icon: config.showIcons ? Moon : undefined
-    },
-    { 
-      value: "grape", 
-      label: "Grape",
-      description: config.showDescriptions ? "Small purple fruits" : undefined,
-      badge: config.showBadges ? "Antioxidants" : undefined,
-      badgeVariant: config.badgeVariant,
-      icon: config.showIcons ? Github : undefined
-    },
-    { 
-      value: "strawberry", 
-      label: "Strawberry",
-      description: config.showDescriptions ? "A red berry" : undefined,
-      badge: config.showBadges ? "Seasonal" : undefined,
-      badgeVariant: config.badgeVariant,
-      icon: config.showIcons ? Home : undefined
-    },
-    { 
-      value: "watermelon", 
-      label: "Watermelon",
-      description: config.showDescriptions ? "A large green fruit" : undefined,
-      badge: config.showBadges ? "Hydrating" : undefined,
-      badgeVariant: config.badgeVariant,
-      icon: config.showIcons ? RefreshCw : undefined
-    },
-  ], [config.showDescriptions, config.showBadges, config.badgeVariant, config.showIcons]);
+  const updateConfig = useCallback((updates: Partial<PlaygroundState>) => {
+    setConfig(prev => ({ ...prev, ...updates }));
+  }, []);
 
-  const getRichGroupedOptions = useCallback(() => [
+  const resetConfig = useCallback(() => {
+    setConfig({
+      variant: "default",
+      size: "default",
+      multiple: false,
+      searchable: false,
+      clearable: false,
+      disabled: false,
+      required: false,
+      error: false,
+      success: false,
+      loading: false,
+      numbered: false,
+      showBadges: false,
+      showIcons: false,
+      showDescriptions: false,
+      useGroups: false,
+      showGroupHeaders: true,
+      groupDividers: false,
+      selectAll: false,
+      selectedItemsDisplay: "badges",
+      showItemClearButtons: true,
+      maxSelectedItemsToShow: 3,
+      closeOnSelect: true,
+      placeholder: "Select an option...",
+      searchPlaceholder: "Search...",
+      noOptionsMessage: "No options available",
+      noSearchResultsMessage: "No results found",
+      selectAllLabel: "Select All",
+      badgeVariant: "default",
+    });
+    setSelectedValue(undefined);
+  }, []);
+
+  // Generate dynamic options based on config
+  const generateOptions = useCallback((): SelectOption[] => {
+    return [
+      { 
+        value: "apple", 
+        label: "Apple",
+        description: config.showDescriptions ? "A sweet red fruit" : undefined,
+        badge: config.showBadges ? "Popular" : undefined,
+        badgeVariant: config.badgeVariant,
+        icon: config.showIcons ? Zap : undefined,
+      },
+      { 
+        value: "banana", 
+        label: "Banana",
+        description: config.showDescriptions ? "A yellow tropical fruit" : undefined,
+        badge: config.showBadges ? "Healthy" : undefined,
+        badgeVariant: config.badgeVariant,
+        icon: config.showIcons ? Sun : undefined,
+      },
+      { 
+        value: "orange", 
+        label: "Orange",
+        description: config.showDescriptions ? "A citrus fruit" : undefined,
+        badge: config.showBadges ? "Vitamin C" : undefined,
+        badgeVariant: config.badgeVariant,
+        icon: config.showIcons ? Moon : undefined,
+      },
+      { 
+        value: "grape", 
+        label: "Grape",
+        description: config.showDescriptions ? "Small purple fruits" : undefined,
+        badge: config.showBadges ? "Antioxidants" : undefined,
+        badgeVariant: config.badgeVariant,
+        icon: config.showIcons ? Github : undefined,
+      },
+      { 
+        value: "strawberry", 
+        label: "Strawberry",
+        description: config.showDescriptions ? "A red berry" : undefined,
+        badge: config.showBadges ? "Seasonal" : undefined,
+        badgeVariant: config.badgeVariant,
+        icon: config.showIcons ? Home : undefined,
+      },
+      { 
+        value: "watermelon", 
+        label: "Watermelon",
+        description: config.showDescriptions ? "A large green fruit" : undefined,
+        badge: config.showBadges ? "Hydrating" : undefined,
+        badgeVariant: config.badgeVariant,
+        icon: config.showIcons ? RefreshCw : undefined,
+      },
+    ];
+  }, [config.showDescriptions, config.showBadges, config.badgeVariant, config.showIcons]);
+
+  const generateGroups = useCallback(() => [
     {
       label: "Fruits",
       options: [
@@ -258,7 +262,7 @@ export default function Playground() {
           description: config.showDescriptions ? "A sweet red fruit" : undefined,
           badge: config.showBadges ? "Popular" : undefined,
           badgeVariant: config.badgeVariant,
-          icon: config.showIcons ? Zap : undefined
+          icon: config.showIcons ? Zap : undefined,
         },
         { 
           value: "banana", 
@@ -266,7 +270,7 @@ export default function Playground() {
           description: config.showDescriptions ? "A yellow tropical fruit" : undefined,
           badge: config.showBadges ? "Healthy" : undefined,
           badgeVariant: config.badgeVariant,
-          icon: config.showIcons ? Sun : undefined
+          icon: config.showIcons ? Sun : undefined,
         },
         { 
           value: "orange", 
@@ -274,7 +278,7 @@ export default function Playground() {
           description: config.showDescriptions ? "A citrus fruit" : undefined,
           badge: config.showBadges ? "Vitamin C" : undefined,
           badgeVariant: config.badgeVariant,
-          icon: config.showIcons ? Moon : undefined
+          icon: config.showIcons ? Moon : undefined,
         },
       ]
     },
@@ -287,7 +291,7 @@ export default function Playground() {
           description: config.showDescriptions ? "An orange root vegetable" : undefined,
           badge: config.showBadges ? "Crunchy" : undefined,
           badgeVariant: config.badgeVariant,
-          icon: config.showIcons ? Github : undefined
+          icon: config.showIcons ? Github : undefined,
         },
         { 
           value: "broccoli", 
@@ -295,7 +299,7 @@ export default function Playground() {
           description: config.showDescriptions ? "A green tree-like vegetable" : undefined,
           badge: config.showBadges ? "Nutritious" : undefined,
           badgeVariant: config.badgeVariant,
-          icon: config.showIcons ? Home : undefined
+          icon: config.showIcons ? Home : undefined,
         },
         { 
           value: "spinach", 
@@ -303,107 +307,154 @@ export default function Playground() {
           description: config.showDescriptions ? "A leafy green vegetable" : undefined,
           badge: config.showBadges ? "Iron-rich" : undefined,
           badgeVariant: config.badgeVariant,
-          icon: config.showIcons ? RefreshCw : undefined
+          icon: config.showIcons ? RefreshCw : undefined,
         },
       ]
     }
   ], [config.showDescriptions, config.showBadges, config.badgeVariant, config.showIcons]);
 
-  const generateOptionCode = (value: string, label: string, description?: string, badge?: string, icon?: string) => {
-    const props = [`value: "${value}"`, `label: "${label}"`];
-    if (description) props.push(`description: "${description}"`);
-    if (badge) {
-      props.push(`badge: "${badge}"`);
-      if (config.badgeVariant !== "default") {
-        props.push(`badgeVariant: "${config.badgeVariant}"`);
-      }
-    }
-    if (icon) props.push(`icon: ${icon}`);
-    return `{ ${props.join(', ')} }`;
-  };
-
   const generateCode = useCallback(() => {
-    const props = [];
+    const props: string[] = [];
     
-    // Always include options or groups
+    // Options or Groups
     if (config.useGroups) {
-      props.push('groups={groupedOptions}');
+      props.push('groups={groups}');
     } else {
       props.push('options={options}');
     }
     
-    // Add non-default props
+    // Basic props
     if (config.placeholder !== "Select an option...") props.push(`placeholder="${config.placeholder}"`);
     if (config.variant !== "default") props.push(`variant="${config.variant}"`);
     if (config.size !== "default") props.push(`size="${config.size}"`);
+    
+    // Boolean flags
     if (config.multiple) props.push('multiple');
     if (config.searchable) props.push('searchable');
     if (config.clearable) props.push('clearable');
     if (config.disabled) props.push('disabled');
+    if (config.required) props.push('required');
     if (config.error) props.push('error');
     if (config.success) props.push('success');
     if (config.loading) props.push('loading');
     if (config.numbered) props.push('numbered');
+    if (!config.closeOnSelect) props.push('closeOnSelect={false}');
     
-    // Multi-select specific props
-    if (config.multiple && config.selectedItemsDisplay !== "badges") props.push(`selectedItemsDisplay="${config.selectedItemsDisplay}"`);
-    if (config.multiple && !config.showItemClearButtons) props.push('showItemClearButtons={false}');
-    if (config.multiple && config.maxSelectedItemsToShow !== 3) props.push(`maxSelectedItemsToShow={${config.maxSelectedItemsToShow}}`);
-    if (config.multiple && config.selectAll) props.push('selectAll');
-    if (config.multiple && config.selectAll && config.selectAllLabel !== "Select All") props.push(`selectAllLabel="${config.selectAllLabel}"`);
-    
-    // Option display props
+    // Display options
     if (config.showBadges) props.push('showBadges');
     if (config.showIcons) props.push('showIcons');
     if (config.showDescriptions) props.push('showDescriptions');
     
-    // Custom messages
-    if (config.searchPlaceholder !== "Search...") props.push(`searchPlaceholder="${config.searchPlaceholder}"`);
-    if (config.noOptionsMessage !== "No options available") props.push(`noOptionsMessage="${config.noOptionsMessage}"`);
+    // Group options
+    if (config.useGroups && !config.showGroupHeaders) props.push('showGroupHeaders={false}');
+    if (config.useGroups && config.groupDividers) props.push('groupDividers');
     
-    // Add handlers
-    props.push('onValueChange={(value) => console.log(value)}');
+    // Multi-select options
+    if (config.multiple) {
+      if (config.selectAll) props.push('selectAll');
+      if (config.selectAllLabel !== "Select All") props.push(`selectAllLabel="${config.selectAllLabel}"`);
+      if (config.selectedItemsDisplay !== "badges") props.push(`selectedItemsDisplay="${config.selectedItemsDisplay}"`);
+      if (!config.showItemClearButtons) props.push('showItemClearButtons={false}');
+      if (config.maxSelectedItemsToShow !== 3) props.push(`maxSelectedItemsToShow={${config.maxSelectedItemsToShow}}`);
+    }
+    
+    // Search options
+    if (config.searchPlaceholder !== "Search...") props.push(`searchPlaceholder="${config.searchPlaceholder}"`);
+    
+    // Messages
+    if (config.noOptionsMessage !== "No options available") props.push(`noOptionsMessage="${config.noOptionsMessage}"`);
+    if (config.noSearchResultsMessage !== "No results found") props.push(`noSearchResultsMessage="${config.noSearchResultsMessage}"`);
+    
+    // Event handlers
+    props.push('value={value}');
+    props.push('onValueChange={setValue}');
 
-    const dataArrays = config.useGroups ? `
-const groupedOptions = [
+    const valueType = config.multiple ? '(string | number)[]' : 'string | number | undefined';
+    const initialValue = config.multiple ? '[]' : 'undefined';
+
+    // Icon mapping for code generation
+    const iconMap: Record<string, string> = {
+      apple: 'Zap',
+      banana: 'Sun',
+      orange: 'Moon',
+      grape: 'Github',
+      strawberry: 'Home',
+      watermelon: 'RefreshCw',
+      carrot: 'Github',
+      broccoli: 'Home',
+      spinach: 'RefreshCw',
+    };
+
+    // Description mapping for code generation
+    const descriptionMap: Record<string, string> = {
+      apple: 'A sweet red fruit',
+      banana: 'A yellow tropical fruit',
+      orange: 'A citrus fruit',
+      grape: 'Small purple fruits',
+      strawberry: 'A red berry',
+      watermelon: 'A large green fruit',
+      carrot: 'An orange root vegetable',
+      broccoli: 'A green tree-like vegetable',
+      spinach: 'A leafy green vegetable',
+    };
+
+    // Badge mapping for code generation
+    const badgeMap: Record<string, string> = {
+      apple: 'Popular',
+      banana: 'Healthy',
+      orange: 'Vitamin C',
+      grape: 'Antioxidants',
+      strawberry: 'Seasonal',
+      watermelon: 'Hydrating',
+      carrot: 'Crunchy',
+      broccoli: 'Nutritious',
+      spinach: 'Iron-rich',
+    };
+
+    const optionCode = (val: string, label: string) => {
+      const parts = [`value: "${val}", label: "${label}"`];
+      if (config.showDescriptions) parts.push(`description: "${descriptionMap[val] || 'Description here'}"`);
+      if (config.showBadges) parts.push(`badge: "${badgeMap[val] || 'Badge'}", badgeVariant: "${config.badgeVariant}"`);
+      if (config.showIcons) parts.push(`icon: ${iconMap[val] || 'Zap'}`);
+      return `{ ${parts.join(', ')} }`;
+    };
+
+    const dataCode = config.useGroups ? `const groups = [
   {
     label: "Fruits",
     options: [
-      ${generateOptionCode("apple", "Apple", config.showDescriptions ? "A sweet red fruit" : undefined, config.showBadges ? "Popular" : undefined, config.showIcons ? "Apple" : undefined)},
-      ${generateOptionCode("banana", "Banana", config.showDescriptions ? "A yellow tropical fruit" : undefined, config.showBadges ? "Healthy" : undefined, config.showIcons ? "Banana" : undefined)},
-      ${generateOptionCode("orange", "Orange", config.showDescriptions ? "A citrus fruit" : undefined, config.showBadges ? "Vitamin C" : undefined, config.showIcons ? "Citrus" : undefined)},
+      ${optionCode('apple', 'Apple')},
+      ${optionCode('banana', 'Banana')},
+      ${optionCode('orange', 'Orange')},
     ]
   },
   {
-    label: "Vegetables", 
+    label: "Vegetables",
     options: [
-      ${generateOptionCode("carrot", "Carrot", config.showDescriptions ? "An orange root vegetable" : undefined, config.showBadges ? "Crunchy" : undefined, config.showIcons ? "Carrot" : undefined)},
-      ${generateOptionCode("broccoli", "Broccoli", config.showDescriptions ? "A green tree-like vegetable" : undefined, config.showBadges ? "Nutritious" : undefined, config.showIcons ? "Broccoli" : undefined)},
-      ${generateOptionCode("spinach", "Spinach", config.showDescriptions ? "A leafy green vegetable" : undefined, config.showBadges ? "Iron-rich" : undefined, config.showIcons ? "Leaf" : undefined)},
+      ${optionCode('carrot', 'Carrot')},
+      ${optionCode('broccoli', 'Broccoli')},
+      ${optionCode('spinach', 'Spinach')},
     ]
   }
-];` : `
-const options = [
-  ${generateOptionCode("apple", "Apple", config.showDescriptions ? "A sweet red fruit" : undefined, config.showBadges ? "Popular" : undefined, config.showIcons ? "Apple" : undefined)},
-  ${generateOptionCode("banana", "Banana", config.showDescriptions ? "A yellow tropical fruit" : undefined, config.showBadges ? "Healthy" : undefined, config.showIcons ? "Banana" : undefined)},
-  ${generateOptionCode("orange", "Orange", config.showDescriptions ? "A citrus fruit" : undefined, config.showBadges ? "Vitamin C" : undefined, config.showIcons ? "Citrus" : undefined)},
-  ${generateOptionCode("grape", "Grape", config.showDescriptions ? "Small purple fruits" : undefined, config.showBadges ? "Antioxidants" : undefined, config.showIcons ? "Grape" : undefined)},
-  ${generateOptionCode("strawberry", "Strawberry", config.showDescriptions ? "A red berry" : undefined, config.showBadges ? "Seasonal" : undefined, config.showIcons ? "Code" : undefined)},
-  ${generateOptionCode("watermelon", "Watermelon", config.showDescriptions ? "A large green fruit" : undefined, config.showBadges ? "Hydrating" : undefined, config.showIcons ? "Zap" : undefined)},
+];` : `const options = [
+  ${optionCode('apple', 'Apple')},
+  ${optionCode('banana', 'Banana')},
+  ${optionCode('orange', 'Orange')},
+  ${optionCode('grape', 'Grape')},
+  ${optionCode('strawberry', 'Strawberry')},
+  ${optionCode('watermelon', 'Watermelon')},
 ];`;
 
-    const imports = config.showIcons ? 
-      'import { Select } from \'thereactselect\';\nimport { Code, Zap, Globe, Layers, Carrot } from \'lucide-react\';' : 
-      'import { Select } from \'thereactselect\';';
-
-    const stateType = config.multiple ? '<(string | number)[]>' : '<string | number | undefined>';
-    const initialValue = config.multiple ? '[]' : 'undefined';
+    const imports = config.showIcons 
+      ? `import { Select } from 'thereactselect';\nimport { useState } from 'react';\nimport { Zap, Sun, Moon, Github, Home, RefreshCw } from 'lucide-react';`
+      : `import { Select } from 'thereactselect';\nimport { useState } from 'react';`;
 
     return `${imports}
-${dataArrays}
+
+${dataCode}
 
 function MyComponent() {
-  const [value, setValue] = useState${stateType}(${initialValue});
+  const [value, setValue] = useState<${valueType}>(${initialValue});
 
   return (
     <Select
@@ -413,39 +464,8 @@ function MyComponent() {
 }`;
   }, [config]);
 
-  const resetConfig = useCallback(() => {
-    setConfig({
-      variant: "default",
-      size: "default",
-      multiple: false,
-      searchable: false,
-      clearable: false,
-      disabled: false,
-      error: false,
-      success: false,
-      loading: false,
-      numbered: false,
-      selectedItemsDisplay: "badges",
-      showItemClearButtons: true,
-      maxSelectedItemsToShow: 3,
-      showBadges: false,
-      badgeVariant: "default",
-      showIcons: false,
-      showDescriptions: false,
-      useGroups: false,
-      selectAll: false,
-      selectAllLabel: "Select All",
-      placeholder: "Select an option...",
-      noOptionsMessage: "No options available",
-      searchPlaceholder: "Search...",
-    });
-    setSelectedValue(undefined);
-  }, []);
-
-  const updateConfig = useCallback((updates: Partial<PlaygroundState>) => {
-    setConfig(prev => ({ ...prev, ...updates }));
-  }, []);
-
+  const options = useMemo(() => generateOptions(), [generateOptions]);
+  const groups = useMemo(() => generateGroups(), [generateGroups]);
   const generatedCode = useMemo(() => generateCode(), [generateCode]);
 
   return (
@@ -465,16 +485,17 @@ function MyComponent() {
           <div className="flex items-center gap-2">
             <button
               onClick={resetConfig}
-              className="p-2 rounded-md border border-border bg-background hover:bg-accent"
+              className="p-2 rounded-md border border-border bg-background hover:bg-accent transition-colors"
               title="Reset to defaults"
             >
               <RefreshCw className="h-4 w-4" />
             </button>
             <a
               href="https://github.com/themrsami/thereactselect"
-              className="p-2 rounded-md border border-border bg-background hover:bg-accent"
+              className="p-2 rounded-md border border-border bg-background hover:bg-accent transition-colors"
               target="_blank"
               rel="noopener noreferrer"
+              title="View on GitHub"
             >
               <Github className="h-4 w-4" />
             </a>
@@ -483,234 +504,382 @@ function MyComponent() {
         </div>
       </header>
 
-      <div className="container max-w-7xl mx-auto p-4">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="container max-w-[1800px] mx-auto p-4 md:p-6">
+        <div className="grid grid-cols-1 xl:grid-cols-[380px_1fr] gap-6">
           {/* Configuration Panel */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className="bg-card border border-border rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">Configuration</h2>
+          <div className="space-y-4">
+            <div className="bg-card border border-border rounded-lg p-4 sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold">Configuration</h2>
+                <button
+                  onClick={resetConfig}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Reset All
+                </button>
+              </div>
               
               <div className="space-y-4">
-                {/* Variant */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Variant</label>
-                  <Select
-                    options={[
-                      { value: "default", label: "Default" },
-                      { value: "outline", label: "Outline" },
-                      { value: "ghost", label: "Ghost" },
-                      { value: "filled", label: "Filled" },
-                    ]}
-                    value={config.variant}
-                    onValueChange={(value) => updateConfig({ variant: value as any })}
-                    size="sm"
-                  />
-                </div>
-
-                {/* Size */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Size</label>
-                  <Select
-                    options={[
-                      { value: "sm", label: "Small" },
-                      { value: "default", label: "Default" },
-                      { value: "lg", label: "Large" },
-                      { value: "xl", label: "Extra Large" },
-                    ]}
-                    value={config.size}
-                    onValueChange={(value) => updateConfig({ size: value as any })}
-                    size="sm"
-                  />
-                </div>
-
-                {/* Badge Variant */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Badge Variant</label>
-                  <Select
-                    options={[
-                      { value: "default", label: "Default" },
-                      { value: "secondary", label: "Secondary" },
-                      { value: "success", label: "Success" },
-                      { value: "warning", label: "Warning" },
-                      { value: "error", label: "Error" },
-                      { value: "outline", label: "Outline" },
-                    ]}
-                    value={config.badgeVariant}
-                    onValueChange={(value) => updateConfig({ badgeVariant: value as any })}
-                    size="sm"
-                    disabled={!config.showBadges}
-                  />
-                </div>
-
-                {/* Text Inputs */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Placeholder</label>
-                  <StyledInput
-                    value={config.placeholder}
-                    onChange={(value) => updateConfig({ placeholder: value })}
-                    placeholder="Enter placeholder text"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Search Placeholder</label>
-                  <StyledInput
-                    value={config.searchPlaceholder}
-                    onChange={(value) => updateConfig({ searchPlaceholder: value })}
-                    placeholder="Enter search placeholder"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">No Options Message</label>
-                  <StyledInput
-                    value={config.noOptionsMessage}
-                    onChange={(value) => updateConfig({ noOptionsMessage: value })}
-                    placeholder="Enter no options message"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Select All Label</label>
-                  <StyledInput
-                    value={config.selectAllLabel}
-                    onChange={(value) => updateConfig({ selectAllLabel: value })}
-                    placeholder="Enter select all label"
-                    disabled={!config.multiple || !config.selectAll}
-                  />
-                </div>
-
-                {/* Boolean Options */}
-                <div className="space-y-3">
-                  <h3 className="text-sm font-medium">Options</h3>
-                  <div className="max-h-64 overflow-y-auto space-y-2 pr-2">
-                    {[
-                      { key: 'multiple', label: 'Multiple Selection' },
-                      { key: 'searchable', label: 'Searchable' },
-                      { key: 'clearable', label: 'Clearable' },
-                      { key: 'disabled', label: 'Disabled' },
-                      { key: 'error', label: 'Error State' },
-                      { key: 'success', label: 'Success State' },
-                      { key: 'loading', label: 'Loading State' },
-                      { key: 'numbered', label: 'Numbered Options' },
-                      { key: 'showBadges', label: 'Show Badges' },
-                      { key: 'showIcons', label: 'Show Icons' },
-                      { key: 'showDescriptions', label: 'Show Descriptions' },
-                      { key: 'useGroups', label: 'Use Grouped Options' },
-                      { key: 'selectAll', label: 'Select All (Multi-select only)', disabled: !config.multiple },
-                    ].map(({ key, label, disabled }) => (
-                      <StyledCheckbox
-                        key={key}
-                        checked={config[key as keyof PlaygroundState] as boolean}
-                        disabled={disabled}
-                        onChange={(checked) => updateConfig({ [key]: checked })}
-                        label={label}
-                      />
-                    ))}
+                {/* Styling Section */}
+                <ConfigSection title="Styling">
+                  <div>
+                    <label className="block text-xs font-medium mb-1.5 text-muted-foreground">Variant</label>
+                    <Select
+                      options={[
+                        { value: "default", label: "Default" },
+                        { value: "outline", label: "Outline" },
+                        { value: "ghost", label: "Ghost" },
+                        { value: "filled", label: "Filled" },
+                      ]}
+                      value={config.variant}
+                      onValueChange={(value) => updateConfig({ variant: value as any })}
+                      size="sm"
+                    />
                   </div>
-                </div>
 
-                {/* Multi-select Options */}
-                {config.multiple && (
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-medium">Multi-select Display</h3>
-                    
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Selected Items Display</label>
+                  <div>
+                    <label className="block text-xs font-medium mb-1.5 text-muted-foreground">Size</label>
+                    <Select
+                      options={[
+                        { value: "sm", label: "Small" },
+                        { value: "default", label: "Default" },
+                        { value: "lg", label: "Large" },
+                        { value: "xl", label: "Extra Large" },
+                      ]}
+                      value={config.size}
+                      onValueChange={(value) => updateConfig({ size: value as any })}
+                      size="sm"
+                    />
+                  </div>
+                </ConfigSection>
+
+                {/* Text Configuration */}
+                <ConfigSection title="Text & Labels" collapsible>
+                  <div>
+                    <label className="block text-xs font-medium mb-1.5 text-muted-foreground">Placeholder</label>
+                    <StyledInput
+                      value={config.placeholder}
+                      onChange={(value) => updateConfig({ placeholder: value })}
+                      placeholder="Enter placeholder..."
+                      size="sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium mb-1.5 text-muted-foreground">Search Placeholder</label>
+                    <StyledInput
+                      value={config.searchPlaceholder}
+                      onChange={(value) => updateConfig({ searchPlaceholder: value })}
+                      placeholder="Enter search placeholder..."
+                      size="sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium mb-1.5 text-muted-foreground">No Options Message</label>
+                    <StyledInput
+                      value={config.noOptionsMessage}
+                      onChange={(value) => updateConfig({ noOptionsMessage: value })}
+                      size="sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium mb-1.5 text-muted-foreground">No Results Message</label>
+                    <StyledInput
+                      value={config.noSearchResultsMessage}
+                      onChange={(value) => updateConfig({ noSearchResultsMessage: value })}
+                      size="sm"
+                    />
+                  </div>
+                </ConfigSection>
+
+                {/* Basic Options */}
+                <ConfigSection title="Basic Options">
+                  <StyledCheckbox
+                    checked={config.multiple}
+                    onChange={(checked) => updateConfig({ multiple: checked })}
+                    label="Multiple Selection"
+                  />
+                  <StyledCheckbox
+                    checked={config.searchable}
+                    onChange={(checked) => updateConfig({ searchable: checked })}
+                    label="Searchable"
+                  />
+                  <StyledCheckbox
+                    checked={config.clearable}
+                    onChange={(checked) => updateConfig({ clearable: checked })}
+                    label="Clearable"
+                  />
+                  <StyledCheckbox
+                    checked={config.disabled}
+                    onChange={(checked) => updateConfig({ disabled: checked })}
+                    label="Disabled"
+                  />
+                  <StyledCheckbox
+                    checked={config.required}
+                    onChange={(checked) => updateConfig({ required: checked })}
+                    label="Required"
+                  />
+                  <StyledCheckbox
+                    checked={config.closeOnSelect}
+                    onChange={(checked) => updateConfig({ closeOnSelect: checked })}
+                    label="Close on Select"
+                  />
+                </ConfigSection>
+
+                {/* States */}
+                <ConfigSection title="States" collapsible>
+                  <StyledCheckbox
+                    checked={config.error}
+                    onChange={(checked) => updateConfig({ error: checked })}
+                    label="Error State"
+                  />
+                  <StyledCheckbox
+                    checked={config.success}
+                    onChange={(checked) => updateConfig({ success: checked })}
+                    label="Success State"
+                  />
+                  <StyledCheckbox
+                    checked={config.loading}
+                    onChange={(checked) => updateConfig({ loading: checked })}
+                    label="Loading State"
+                  />
+                </ConfigSection>
+
+                {/* Display Options */}
+                <ConfigSection title="Display Options">
+                  <StyledCheckbox
+                    checked={config.numbered}
+                    onChange={(checked) => updateConfig({ numbered: checked })}
+                    label="Numbered Options"
+                  />
+                  <StyledCheckbox
+                    checked={config.showIcons}
+                    onChange={(checked) => updateConfig({ showIcons: checked })}
+                    label="Show Icons"
+                  />
+                  <StyledCheckbox
+                    checked={config.showDescriptions}
+                    onChange={(checked) => updateConfig({ showDescriptions: checked })}
+                    label="Show Descriptions"
+                  />
+                  <StyledCheckbox
+                    checked={config.showBadges}
+                    onChange={(checked) => updateConfig({ showBadges: checked })}
+                    label="Show Badges"
+                  />
+                  
+                  {config.showBadges && (
+                    <div>
+                      <label className="block text-xs font-medium mb-1.5 text-muted-foreground">Badge Variant</label>
                       <Select
                         options={[
-                          { value: "badges", label: "Badges with Clear Buttons" },
-                          { value: "text", label: "Comma-separated Text" },
-                          { value: "count", label: "Selected Count" },
+                          { value: "default", label: "Default" },
+                          { value: "secondary", label: "Secondary" },
+                          { value: "success", label: "Success" },
+                          { value: "warning", label: "Warning" },
+                          { value: "error", label: "Error" },
+                          { value: "outline", label: "Outline" },
                         ]}
-                        value={config.selectedItemsDisplay}
-                        onValueChange={(value) => updateConfig({ selectedItemsDisplay: value as "badges" | "text" | "count" })}
+                        value={config.badgeVariant}
+                        onValueChange={(value) => updateConfig({ badgeVariant: value as any })}
                         size="sm"
                       />
                     </div>
+                  )}
+                </ConfigSection>
 
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Max Items to Show</label>
-                      <input
-                        type="number"
-                        min="1"
-                        max="10"
-                        value={config.maxSelectedItemsToShow}
-                        onChange={(e) => updateConfig({ maxSelectedItemsToShow: parseInt(e.target.value) || 3 })}
-                        className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
+                {/* Grouping Options */}
+                <ConfigSection title="Grouping" collapsible>
+                  <StyledCheckbox
+                    checked={config.useGroups}
+                    onChange={(checked) => updateConfig({ useGroups: checked })}
+                    label="Use Grouped Options"
+                  />
+                  {config.useGroups && (
+                    <>
+                      <StyledCheckbox
+                        checked={config.showGroupHeaders}
+                        onChange={(checked) => updateConfig({ showGroupHeaders: checked })}
+                        label="Show Group Headers"
+                      />
+                      <StyledCheckbox
+                        checked={config.groupDividers}
+                        onChange={(checked) => updateConfig({ groupDividers: checked })}
+                        label="Group Dividers"
+                      />
+                    </>
+                  )}
+                </ConfigSection>
+
+                {/* Multi-select Options */}
+                {config.multiple && (
+                  <ConfigSection title="Multi-select Options">
+                    <StyledCheckbox
+                      checked={config.selectAll}
+                      onChange={(checked) => updateConfig({ selectAll: checked })}
+                      label="Select All Option"
+                    />
+                    
+                    {config.selectAll && (
+                      <div>
+                        <label className="block text-xs font-medium mb-1.5 text-muted-foreground">Select All Label</label>
+                        <StyledInput
+                          value={config.selectAllLabel}
+                          onChange={(value) => updateConfig({ selectAllLabel: value })}
+                          size="sm"
+                        />
+                      </div>
+                    )}
+                    
+                    <div>
+                      <label className="block text-xs font-medium mb-1.5 text-muted-foreground">Display Mode</label>
+                      <Select
+                        options={[
+                          { value: "badges", label: "Badges" },
+                          { value: "text", label: "Comma-separated Text" },
+                          { value: "count", label: "Count Only" },
+                        ]}
+                        value={config.selectedItemsDisplay}
+                        onValueChange={(value) => updateConfig({ selectedItemsDisplay: value as any })}
+                        size="sm"
                       />
                     </div>
 
                     <StyledCheckbox
                       checked={config.showItemClearButtons}
                       onChange={(checked) => updateConfig({ showItemClearButtons: checked })}
-                      label="Show Individual Clear Buttons"
+                      label="Show Clear Buttons on Badges"
                     />
-                  </div>
+
+                    <div>
+                      <label className="block text-xs font-medium mb-1.5 text-muted-foreground">
+                        Max Items to Show: {config.maxSelectedItemsToShow}
+                      </label>
+                      <input
+                        type="range"
+                        min="1"
+                        max="10"
+                        value={config.maxSelectedItemsToShow}
+                        onChange={(e) => updateConfig({ maxSelectedItemsToShow: parseInt(e.target.value) })}
+                        className="w-full"
+                      />
+                    </div>
+                  </ConfigSection>
                 )}
               </div>
             </div>
           </div>
 
           {/* Preview and Code */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Preview */}
+          <div className="space-y-6">
+            {/* Preview Section */}
             <div className="bg-card border border-border rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold">Preview</h2>
-                <span className="text-sm text-muted-foreground">
-                  Selected: {JSON.stringify(selectedValue)}
-                </span>
+              <div className="mb-4">
+                <h2 className="text-xl font-bold mb-1">Live Preview</h2>
+                <p className="text-sm text-muted-foreground">
+                  Interact with the component to see it in action
+                </p>
               </div>
               
-              <div className="max-w-md">
-                <Select
-                  {...(config.useGroups ? { 
-                    groups: getRichGroupedOptions()
-                  } : { 
-                    options: getRichOptions()
-                  })}
-                  placeholder={config.placeholder}
-                  variant={config.variant}
-                  size={config.size}
-                  multiple={config.multiple}
-                  searchable={config.searchable}
-                  clearable={config.clearable}
-                  disabled={config.disabled}
-                  error={config.error}
-                  success={config.success}
-                  loading={config.loading}
-                  numbered={config.numbered}
-                  selectedItemsDisplay={config.selectedItemsDisplay}
-                  showItemClearButtons={config.showItemClearButtons}
-                  maxSelectedItemsToShow={config.maxSelectedItemsToShow}
-                  showBadges={config.showBadges}
-                  showIcons={config.showIcons}
-                  showDescriptions={config.showDescriptions}
-                  searchPlaceholder={config.searchPlaceholder}
-                  noOptionsMessage={config.noOptionsMessage}
-                  {...(config.multiple && config.selectAll ? {
-                    selectAll: config.selectAll,
-                    selectAllLabel: config.selectAllLabel
-                  } : {})}
-                  value={selectedValue}
-                  onValueChange={setSelectedValue}
-                />
+              <div className="space-y-4">
+                <div className="max-w-xl">
+                  <Select
+                    {...(config.useGroups 
+                      ? { groups, showGroupHeaders: config.showGroupHeaders, groupDividers: config.groupDividers }
+                      : { options }
+                    )}
+                    placeholder={config.placeholder}
+                    variant={config.variant}
+                    size={config.size}
+                    multiple={config.multiple}
+                    searchable={config.searchable}
+                    clearable={config.clearable}
+                    disabled={config.disabled}
+                    required={config.required}
+                    error={config.error}
+                    success={config.success}
+                    loading={config.loading}
+                    numbered={config.numbered}
+                    showBadges={config.showBadges}
+                    showIcons={config.showIcons}
+                    showDescriptions={config.showDescriptions}
+                    searchPlaceholder={config.searchPlaceholder}
+                    noOptionsMessage={config.noOptionsMessage}
+                    noSearchResultsMessage={config.noSearchResultsMessage}
+                    closeOnSelect={config.closeOnSelect}
+                    {...(config.multiple ? {
+                      selectAll: config.selectAll,
+                      selectAllLabel: config.selectAllLabel,
+                      selectedItemsDisplay: config.selectedItemsDisplay,
+                      showItemClearButtons: config.showItemClearButtons,
+                      maxSelectedItemsToShow: config.maxSelectedItemsToShow,
+                    } : {})}
+                    value={selectedValue}
+                    onValueChange={setSelectedValue}
+                  />
+                </div>
+
+                {/* Selected Value Display */}
+                <div className="p-4 bg-muted rounded-lg">
+                  <div className="text-xs font-medium text-muted-foreground mb-1">Current Value:</div>
+                  <code className="text-sm">
+                    {selectedValue === undefined 
+                      ? 'undefined' 
+                      : JSON.stringify(selectedValue, null, 2)
+                    }
+                  </code>
+                </div>
               </div>
             </div>
 
-            {/* Generated Code */}
+            {/* Generated Code Section */}
             <div className="bg-card border border-border rounded-lg p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold">Generated Code</h2>
+                <div>
+                  <h2 className="text-xl font-bold mb-1">Generated Code</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Copy and paste this code into your project
+                  </p>
+                </div>
                 <CopyButton code={generatedCode} />
               </div>
               
-              <div className="max-h-96 overflow-y-auto">
-                <CodeBlock 
-                  code={generatedCode}
-                  language="tsx"
-                />
+              <div className="relative">
+                <div className="max-h-[600px] overflow-y-auto rounded-lg">
+                  <CodeBlock 
+                    code={generatedCode}
+                    language="tsx"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Configuration Summary */}
+            <div className="bg-card border border-border rounded-lg p-6">
+              <h2 className="text-xl font-bold mb-4">Active Configuration</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                {Object.entries(config).map(([key, value]) => (
+                  <div 
+                    key={key}
+                    className="text-xs p-2 rounded bg-muted"
+                  >
+                    <div className="font-medium text-muted-foreground mb-0.5">
+                      {key.replace(/([A-Z])/g, ' $1').trim()}
+                    </div>
+                    <div className="font-mono">
+                      {typeof value === 'boolean' 
+                        ? (value ? '✓ true' : '✗ false')
+                        : typeof value === 'string' && value.length > 20
+                        ? `"${value.substring(0, 20)}..."`
+                        : typeof value === 'string'
+                        ? `"${value}"`
+                        : String(value)
+                      }
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

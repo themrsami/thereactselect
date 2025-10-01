@@ -96,7 +96,7 @@ function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      className="p-2 rounded-md border border-border bg-background hover:bg-accent transition-colors"
+      className="relative p-2 rounded-md border border-border bg-background hover:bg-accent transition-colors flex items-center justify-center"
     >
       <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
       <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -204,7 +204,6 @@ export default function Home() {
   const [selectAllValue, setSelectAllValue] = useState<(string | number)[]>([]);
   const [searchableValue, setSearchableValue] = useState<string | number | undefined>();
   const [clearableValue, setClearableValue] = useState<string | number | undefined>("apple");
-  const [basicUsageTab, setBasicUsageTab] = useState<"component" | "css">("component");
   const [cssFileTab, setCssFileTab] = useState<"globals" | "index">("globals");
   const [packageManagerTab, setPackageManagerTab] = useState<"npm" | "pnpm" | "yarn" | "bun">("npm");
 
@@ -747,12 +746,15 @@ function NumberedExample() {
           </div>
 
           {/* Quick Start */}
-          <div className="max-w-2xl mx-auto space-y-6">
-            <h3 className="text-lg font-semibold mb-4">Quick Start</h3>
+          <div className="max-w-2xl mx-auto space-y-8">
+            <h3 className="text-2xl font-semibold mb-6">Quick Start Guide</h3>
             
-            {/* Installation */}
-            <div>
-              <h4 className="text-sm font-medium text-muted-foreground mb-2">Installation</h4>
+            {/* Step 1: Installation */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm font-bold">1</div>
+                <h4 className="text-base font-semibold">Install the package</h4>
+              </div>
               
               {/* Package Manager Tabs */}
               <div className="flex border border-border rounded-lg mb-3 p-1 bg-muted">
@@ -784,38 +786,183 @@ function NumberedExample() {
               />
             </div>
 
-            {/* Usage Example */}
-            <div>
-              <h4 className="text-sm font-medium text-muted-foreground mb-4">Basic Usage</h4>
+            {/* Step 2: CSS Setup */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm font-bold">2</div>
+                <h4 className="text-base font-semibold">Setup CSS Variables</h4>
+              </div>
+              <p className="text-sm text-muted-foreground ml-8">
+                Add the required CSS variables to your project. Choose the setup based on your Tailwind CSS version:
+              </p>
               
-              {/* Tabs */}
-              <div className="flex mb-4 bg-muted rounded-lg p-1">
+              {/* CSS File Tabs */}
+              <div className="flex space-x-2 ml-8">
                 <button
-                  onClick={() => setBasicUsageTab("component")}
+                  onClick={() => setCssFileTab('globals')}
                   className={cn(
-                    "flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                    basicUsageTab === "component" 
-                      ? "bg-background text-foreground shadow-sm" 
-                      : "text-muted-foreground hover:text-foreground"
+                    "px-3 py-1.5 text-sm font-medium rounded border transition-colors",
+                    cssFileTab === 'globals'
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background text-foreground border-border hover:bg-accent"
                   )}
                 >
-                  Component
+                  Tailwind CSS v4
                 </button>
                 <button
-                  onClick={() => setBasicUsageTab("css")}
+                  onClick={() => setCssFileTab('index')}
                   className={cn(
-                    "flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                    basicUsageTab === "css" 
-                      ? "bg-background text-foreground shadow-sm" 
-                      : "text-muted-foreground hover:text-foreground"
+                    "px-3 py-1.5 text-sm font-medium rounded border transition-colors",
+                    cssFileTab === 'index'
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background text-foreground border-border hover:bg-accent"
                   )}
                 >
-                  CSS Variables
+                  Tailwind CSS v3
                 </button>
               </div>
+              
+              {/* CSS Content */}
+              <div className="ml-8">
+                {cssFileTab === 'globals' && (
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      For <strong>Next.js</strong> or <strong>Vite</strong> with Tailwind CSS v4, add to your <code className="px-1 py-0.5 rounded bg-muted">app/globals.css</code> or <code className="px-1 py-0.5 rounded bg-muted">src/index.css</code>:
+                    </p>
+                    <CodeBlock
+                      code={`@import 'tailwindcss';
 
-              {/* Tab Content */}
-              {basicUsageTab === "component" ? (
+@theme inline {
+  --color-background: 0 0% 100%;
+  --color-foreground: 222.2 84% 4.9%;
+  --color-card: 0 0% 100%;
+  --color-card-foreground: 222.2 84% 4.9%;
+  --color-popover: 0 0% 100%;
+  --color-popover-foreground: 222.2 84% 4.9%;
+  --color-primary: 221.2 83.2% 53.3%;
+  --color-primary-foreground: 210 40% 98%;
+  --color-secondary: 210 40% 96%;
+  --color-secondary-foreground: 222.2 84% 4.9%;
+  --color-muted: 210 40% 96%;
+  --color-muted-foreground: 215.4 16.3% 46.9%;
+  --color-accent: 210 40% 96%;
+  --color-accent-foreground: 222.2 84% 4.9%;
+  --color-destructive: 0 84.2% 60.2%;
+  --color-destructive-foreground: 210 40% 98%;
+  --color-border: 214.3 31.8% 91.4%;
+  --color-input: 214.3 31.8% 91.4%;
+  --color-ring: 221.2 83.2% 53.3%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  @theme inline {
+    --color-background: 222.2 84% 4.9%;
+    --color-foreground: 210 40% 98%;
+    --color-card: 222.2 84% 4.9%;
+    --color-card-foreground: 210 40% 98%;
+    --color-popover: 222.2 84% 4.9%;
+    --color-popover-foreground: 210 40% 98%;
+    --color-primary: 217.2 91.2% 59.8%;
+    --color-primary-foreground: 222.2 84% 4.9%;
+    --color-secondary: 217.2 32.6% 17.5%;
+    --color-secondary-foreground: 210 40% 98%;
+    --color-muted: 217.2 32.6% 17.5%;
+    --color-muted-foreground: 215 20.2% 65.1%;
+    --color-accent: 217.2 32.6% 17.5%;
+    --color-accent-foreground: 210 40% 98%;
+    --color-destructive: 0 62.8% 30.6%;
+    --color-destructive-foreground: 210 40% 98%;
+    --color-border: 217.2 32.6% 17.5%;
+    --color-input: 217.2 32.6% 17.5%;
+    --color-ring: 224.3 76.3% 94.1%;
+  }
+}`}
+                      language="css"
+                    />
+                  </div>
+                )}
+                
+                {cssFileTab === 'index' && (
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      For <strong>Create React App</strong> or traditional setup with Tailwind CSS v3, add to your <code className="px-1 py-0.5 rounded bg-muted">src/index.css</code>:
+                    </p>
+                    <CodeBlock
+                      code={`@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+  
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}`}
+                      language="css"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Step 3: Usage Example */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm font-bold">3</div>
+                <h4 className="text-base font-semibold">Use the component</h4>
+              </div>
+              
+              <div className="ml-8">
                 <CodeBlock 
                   code={`import { Select } from 'thereactselect';
 import { useState } from 'react';
@@ -842,166 +989,7 @@ function MyComponent() {
 }`}
                   language="tsx"
                 />
-              ) : (
-                <div className="space-y-4">
-                  {/* CSS File Tabs */}
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => setCssFileTab('globals')}
-                      className={cn(
-                        "px-3 py-1.5 text-sm font-medium rounded border transition-colors",
-                        cssFileTab === 'globals'
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-background text-foreground border-border hover:bg-accent"
-                      )}
-                    >
-                      globals.css (Next.js)
-                    </button>
-                    <button
-                      onClick={() => setCssFileTab('index')}
-                      className={cn(
-                        "px-3 py-1.5 text-sm font-medium rounded border transition-colors",
-                        cssFileTab === 'index'
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-background text-foreground border-border hover:bg-accent"
-                      )}
-                    >
-                      index.css (React)
-                    </button>
-                  </div>
-                  
-                  {/* CSS Content */}
-                  {cssFileTab === 'globals' && (
-                    <CodeBlock
-                      code={`@import 'tailwindcss';
-
-@layer base {
-  :root {
-    /* Light theme colors */
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
-  }
-  
-  .dark {
-    /* Dark theme colors */
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.1%;
-  }
-}
-
-* {
-  border-color: hsl(var(--border));
-}
-
-body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-}`}
-                      language="css"
-                    />
-                  )}
-                  
-                  {cssFileTab === 'index' && (
-                    <CodeBlock
-                      code={`@import 'tailwindcss';
-
-@layer base {
-  :root {
-    /* Light theme colors */
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
-  }
-  
-  [data-theme="dark"] {
-    /* Dark theme colors */
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.1%;
-  }
-}
-
-* {
-  border-color: hsl(var(--border));
-}
-
-body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-}`}
-                      language="css"
-                    />
-                  )}
-                </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
