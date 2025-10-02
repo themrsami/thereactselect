@@ -58,6 +58,8 @@ export interface BaseSelectProps {
   position?: "top" | "bottom" | "auto";
   /** Maximum height of the dropdown */
   maxHeight?: number;
+  /** Whether the dropdown is scrollable (default: true) */
+  scrollable?: boolean;
   /** Whether to close on select */
   closeOnSelect?: boolean;
   /** Custom class name */

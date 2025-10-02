@@ -384,6 +384,32 @@ function GroupedExample() {
 />
 ```
 
+### Scrollable Dropdown with Custom Height
+```tsx
+// Default scrollable dropdown (300px max height)
+<Select 
+  options={longListOfOptions}
+  searchable
+  placeholder="Select from many options..."
+/>
+
+// Custom max height
+<Select 
+  options={longListOfOptions}
+  searchable
+  scrollable
+  maxHeight={500}
+  placeholder="Taller dropdown..."
+/>
+
+// Disable scrolling (shows all options)
+<Select 
+  options={options}
+  scrollable={false}
+  placeholder="No scrolling..."
+/>
+```
+
 ## API Reference
 
 ### Types
@@ -433,7 +459,11 @@ interface SelectGroup {
 | `clearable` | `boolean` | `false` | Show clear button when value selected |
 | `disabled` | `boolean` | `false` | Disable the entire component |
 | `loading` | `boolean` | `false` | Show loading spinner |
+| `closeOnSelect` | `boolean` | `true` | Close dropdown after selecting an option |
 | `onOpenChange` | `(open: boolean) => void` | `undefined` | Callback when dropdown opens/closes |
+| **Dropdown Behavior** | | | |
+| `scrollable` | `boolean` | `true` | Enable scrolling when content exceeds maxHeight |
+| `maxHeight` | `number` | `300` | Maximum height of dropdown in pixels |
 | **Styling & Variants** | | | |
 | `variant` | `"default" \| "outline"` | `"default"` | Visual style variant |
 | `size` | `"sm" \| "default" \| "lg"` | `"default"` | Size variant |

@@ -9,6 +9,7 @@ interface StyledInputProps extends Omit<React.InputHTMLAttributes<HTMLInputEleme
   variant?: "default" | "outline" | "ghost" | "filled";
   size?: "sm" | "default" | "lg" | "xl";
   debounceMs?: number;
+  label?: string;
 }
 
 export function StyledInput({ 
@@ -17,6 +18,7 @@ export function StyledInput({
   variant = "default", 
   size = "sm",
   debounceMs = 500,
+  label,
   className,
   ...props 
 }: StyledInputProps) {
@@ -51,19 +53,26 @@ export function StyledInput({
   };
 
   return (
-    <input
-      {...props}
-      value={localValue}
-      onChange={(e) => setLocalValue(e.target.value)}
-      className={cn(
-        "w-full rounded-md border transition-colors",
-        "focus:outline-none focus:ring-1 focus:ring-ring focus:ring-offset-1",
-        "disabled:cursor-not-allowed disabled:opacity-50",
-        "placeholder:text-muted-foreground",
-        sizeClasses[size],
-        variantClasses[variant],
-        className
+    <div className="w-full">
+      {label && (
+        <label className="block text-xs font-medium mb-1.5 text-muted-foreground">
+          {label}
+        </label>
       )}
-    />
+      <input
+        {...props}
+        value={localValue}
+        onChange={(e) => setLocalValue(e.target.value)}
+        className={cn(
+          "w-full rounded-md border transition-colors",
+          "focus:outline-none focus:ring-1 focus:ring-ring focus:ring-offset-1",
+          "disabled:cursor-not-allowed disabled:opacity-50",
+          "placeholder:text-muted-foreground",
+          sizeClasses[size],
+          variantClasses[variant],
+          className
+        )}
+      />
+    </div>
   );
 }

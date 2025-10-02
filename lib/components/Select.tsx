@@ -361,6 +361,9 @@ const SelectContent = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEle
     const showNoOptions = filteredOptions.length === 0;
     const showSearch = selectProps.searchable;
 
+    const isScrollable = selectProps.scrollable !== false; // Default to true
+    const maxHeight = selectProps.maxHeight || (isScrollable ? 300 : undefined);
+
     return (
       <div
         ref={ref}
@@ -370,13 +373,18 @@ const SelectContent = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEle
           selectProps.dropdownClassName,
           className
         )}
-        style={{ maxHeight: selectProps.maxHeight || 300 }}
         role="listbox"
         {...props}
       >
         {showSearch && <SelectSearch />}
         
-        <div className="max-h-60 overflow-y-auto p-1">
+        <div 
+          className={cn(
+            "p-1",
+            isScrollable ? "overflow-y-auto" : "overflow-visible"
+          )}
+          style={isScrollable && maxHeight ? { maxHeight: `${maxHeight}px` } : undefined}
+        >
           {showNoOptions ? (
             <div className="px-3 py-6 text-center text-sm text-muted-foreground">
               {searchValue ? 

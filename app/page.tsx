@@ -133,6 +133,10 @@ function APITable() {
     { prop: "clearable", type: "boolean", default: "false", description: "Show clear button to reset selection" },
     { prop: "closeOnSelect", type: "boolean", default: "true", description: "Close dropdown after selecting an option" },
     
+    // Dropdown Behavior
+    { prop: "scrollable", type: "boolean", default: "true", description: "Enable scrolling in dropdown when content exceeds maxHeight" },
+    { prop: "maxHeight", type: "number", default: "300", description: "Maximum height of dropdown in pixels (only applies when scrollable is true)" },
+    
     // Multi-Select Display
     { prop: "selectedItemsDisplay", type: '"badges" | "text" | "count"', default: '"badges"', description: "How to display selected items in multi-select mode" },
     { prop: "showItemClearButtons", type: "boolean", default: "true", description: "Show individual clear buttons on selected item badges" },
@@ -640,6 +644,97 @@ function NumberedExample() {
       onValueChange={setValue}
       value={value}
     />
+  );
+}`
+    },
+    {
+      title: "Scrollable Dropdown",
+      description: "Control dropdown height with scrollable and maxHeight props",
+      preview: (
+        <div className="w-full space-y-3">
+          <Select 
+            options={[
+              { value: "1", label: "Item 1", description: "First item" },
+              { value: "2", label: "Item 2", description: "Second item" },
+              { value: "3", label: "Item 3", description: "Third item" },
+              { value: "4", label: "Item 4", description: "Fourth item" },
+              { value: "5", label: "Item 5", description: "Fifth item" },
+              { value: "6", label: "Item 6", description: "Sixth item" },
+              { value: "7", label: "Item 7", description: "Seventh item" },
+              { value: "8", label: "Item 8", description: "Eighth item" },
+              { value: "9", label: "Item 9", description: "Ninth item" },
+              { value: "10", label: "Item 10", description: "Tenth item" },
+            ]}
+            placeholder="Default scrollable (300px max)..." 
+            searchable
+            showDescriptions
+            scrollable
+            maxHeight={300}
+          />
+          <Select 
+            options={[
+              { value: "1", label: "Item 1" },
+              { value: "2", label: "Item 2" },
+              { value: "3", label: "Item 3" },
+              { value: "4", label: "Item 4" },
+              { value: "5", label: "Item 5" },
+            ]}
+            placeholder="No scrolling (shows all)..." 
+            scrollable={false}
+          />
+        </div>
+      ),
+      code: `import { Select } from 'thereactselect';
+import { useState } from 'react';
+
+const manyOptions = [
+  { value: "1", label: "Item 1", description: "First item" },
+  { value: "2", label: "Item 2", description: "Second item" },
+  { value: "3", label: "Item 3", description: "Third item" },
+  { value: "4", label: "Item 4", description: "Fourth item" },
+  { value: "5", label: "Item 5", description: "Fifth item" },
+  { value: "6", label: "Item 6", description: "Sixth item" },
+  { value: "7", label: "Item 7", description: "Seventh item" },
+  { value: "8", label: "Item 8", description: "Eighth item" },
+  { value: "9", label: "Item 9", description: "Ninth item" },
+  { value: "10", label: "Item 10", description: "Tenth item" },
+];
+
+function ScrollableExample() {
+  const [value, setValue] = useState();
+  
+  return (
+    <>
+      {/* Default scrollable (300px max height) */}
+      <Select 
+        options={manyOptions} 
+        placeholder="Default scrollable..." 
+        searchable
+        showDescriptions
+        onValueChange={setValue}
+        value={value}
+      />
+      
+      {/* Custom max height */}
+      <Select 
+        options={manyOptions} 
+        placeholder="Custom height (500px)..." 
+        searchable
+        scrollable
+        maxHeight={500}
+        onValueChange={setValue}
+        value={value}
+      />
+      
+      {/* Disable scrolling */}
+      <Select 
+        options={options} 
+        placeholder="No scrolling..." 
+        scrollable={false}
+        onValueChange={setValue}
+        value={value}
+      />
+    </>
   );
 }`
     }

@@ -46,6 +46,8 @@ interface PlaygroundState {
   
   // Behavior
   closeOnSelect: boolean;
+  scrollable: boolean;
+  maxHeight: number;
   
   // Text Configuration
   placeholder: string;
@@ -150,6 +152,8 @@ export default function Playground() {
     showItemClearButtons: true,
     maxSelectedItemsToShow: 3,
     closeOnSelect: true,
+    scrollable: true,
+    maxHeight: 300,
     placeholder: "Select an option...",
     searchPlaceholder: "Search...",
     noOptionsMessage: "No options available",
@@ -188,6 +192,8 @@ export default function Playground() {
       showItemClearButtons: true,
       maxSelectedItemsToShow: 3,
       closeOnSelect: true,
+      scrollable: true,
+      maxHeight: 300,
       placeholder: "Select an option...",
       searchPlaceholder: "Search...",
       noOptionsMessage: "No options available",
@@ -339,6 +345,8 @@ export default function Playground() {
     if (config.loading) props.push('loading');
     if (config.numbered) props.push('numbered');
     if (!config.closeOnSelect) props.push('closeOnSelect={false}');
+    if (!config.scrollable) props.push('scrollable={false}');
+    if (config.scrollable && config.maxHeight !== 300) props.push(`maxHeight={${config.maxHeight}}`);
     
     // Display options
     if (config.showBadges) props.push('showBadges');
@@ -626,6 +634,22 @@ function MyComponent() {
                     onChange={(checked) => updateConfig({ closeOnSelect: checked })}
                     label="Close on Select"
                   />
+                  <StyledCheckbox
+                    checked={config.scrollable}
+                    onChange={(checked) => updateConfig({ scrollable: checked })}
+                    label="Scrollable Dropdown"
+                  />
+                  
+                  {config.scrollable && (
+                    <StyledInput
+                      type="number"
+                      value={String(config.maxHeight)}
+                      onChange={(value) => updateConfig({ maxHeight: parseInt(value) || 300 })}
+                      label="Max Height (px)"
+                      placeholder="300"
+                      min={100}
+                    />
+                  )}
                 </ConfigSection>
 
                 {/* States */}
@@ -753,19 +777,14 @@ function MyComponent() {
                       label="Show Clear Buttons on Badges"
                     />
 
-                    <div>
-                      <label className="block text-xs font-medium mb-1.5 text-muted-foreground">
-                        Max Items to Show: {config.maxSelectedItemsToShow}
-                      </label>
-                      <input
-                        type="range"
-                        min="1"
-                        max="10"
-                        value={config.maxSelectedItemsToShow}
-                        onChange={(e) => updateConfig({ maxSelectedItemsToShow: parseInt(e.target.value) })}
-                        className="w-full"
-                      />
-                    </div>
+                    <StyledInput
+                      type="number"
+                      value={String(config.maxSelectedItemsToShow)}
+                      onChange={(value) => updateConfig({ maxSelectedItemsToShow: parseInt(value) || 3 })}
+                      label="Max Items to Show"
+                      placeholder="3"
+                      min={1}
+                    />
                   </ConfigSection>
                 )}
               </div>
@@ -809,6 +828,8 @@ function MyComponent() {
                     noOptionsMessage={config.noOptionsMessage}
                     noSearchResultsMessage={config.noSearchResultsMessage}
                     closeOnSelect={config.closeOnSelect}
+                    scrollable={config.scrollable}
+                    maxHeight={config.maxHeight}
                     {...(config.multiple ? {
                       selectAll: config.selectAll,
                       selectAllLabel: config.selectAllLabel,
